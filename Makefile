@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -pedantic -std=c17 -I
+CFLAGS = -Wall -pedantic -std=c17 -I include/
 COBJETS = build/main.o build/audio.o build/affichage.o build/physic.o
 CSCREEN = -lraylib
 
@@ -16,7 +16,7 @@ build/physic.o : src/physic.c include/physic.h
 	$(CC) $(CFLAGS) -c src/physic.c -o build/physic.o
 
 build/main.o : src/main.c include/affichage.h include/audio.h include/physic.h
-	$(CC) $(CFLAGS) -c src/main.c -o build/main.o
+	$(CC) $(CFLAGS) -c src/main.c -o build/main.o $(CSCREEN)
 
 clean:
 	rm -f *.o test
