@@ -15,6 +15,9 @@ build/affichage.o : src/affichage.c include/affichage.h
 build/physic.o : src/physic.c include/physic.h 
 	$(CC) $(CFLAGS) -c src/physic.c -o build/physic.o
 
+build/math.o : src/math.c include/math.h 
+	$(CC) $(CFLAGS) -c src/math.c -o build/math.o
+
 build/main.o : src/main.c include/affichage.h include/audio.h include/physic.h
 	$(CC) $(CFLAGS) -c src/main.c -o build/main.o $(CSCREEN)
 
