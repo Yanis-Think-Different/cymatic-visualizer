@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "outils.h"
+#include "maths.h"
 
 typedef struct grain{
     Vector pos;
@@ -28,10 +29,10 @@ float amplitude(float x, float y, int m, int n, int lenght, int height);
  * aller vers une zone qui vibre moins, et l'écrit dans other->dir.
  * La position du grain n'est pas modifiée.
  * other       : grain dont on met à jour la direction
- * ampli_1     : |A| en (x + h, y)
- * ampli_2     : |A| en (x - h, y)
- * ampli_3     : |A| en (x, y + h)
- * ampli_4     : |A| en (x, y - h)
+ * ampli_u     : |A| en (x + h, y)
+ * ampli_d     : |A| en (x - h, y)
+ * ampli_l     : |A| en (x, y + h)
+ * ampli_r     : |A| en (x, y - h)
  * Les 4 amplitudes doivent être passées en valeur absolue.
  */
 void new_direction(Grain* other, float ampli_u, float ampli_d, float ampli_l, float ampli_r);
@@ -47,5 +48,5 @@ void new_direction(Grain* other, float ampli_u, float ampli_d, float ampli_l, fl
  * delta_T     : durée du pas de simulation
  */
 void maj_pos(Grain* other, float amp, float delta_T);
-    
+
 #endif
