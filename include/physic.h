@@ -2,6 +2,7 @@
 #define PHYSIC
 
 #include <stdlib.h>
+#include <math.h>
 #include "outils.h"
 
 typedef struct grain{
