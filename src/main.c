@@ -1,22 +1,20 @@
-#include "raylib.h"
-#include "../include/maths.h"
 #include "../include/physic.h"
 #include "../include/outils.h"
-#include "../include/audio.h"
-#include "../include/affichage.h"
+//#include "../include/audio.h"
+#include <raylib.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+//#include <time.h>
 
 #define HEIGHT 720
 #define LENGHT 1280
-#define GRAIN_NB 50000
+#define GRAIN_NB 10000
 
 void argument_recuperation(int nb_args, char* tab_args[], Parametre* param);
 
-void calcul(Parametre* param,Const* constante ,Grain* grain);
+void calcul(Parametre* param,Const* constante ,Grain *grain);
 
-Grain** init_tab_grain(Parametre* param);
+void init_tab_grain(Parametre* param, Grain grains[]);
 
 //////////////////////////////////////
 
@@ -25,6 +23,7 @@ int main(int argc, char* argv[]){
 
     Parametre param;
     Const constante;
+    char* fenetre = "cynamic-visualizer";
 
     param.height = HEIGHT;
     param.lenght = LENGHT;
@@ -32,15 +31,33 @@ int main(int argc, char* argv[]){
 
     constante.delta_T = 1;
     constante.pas = 1;
-    constante.m = 56;
-    constante.n = 165;
+    constante.m = 40;
+    constante.n = 30;
 
     if(argc > 1)
         argument_recuperation(argc, argv, &param);
 
-    Grain** grains = init_tab_grain(&param);
+    Grain grains[param.nombre_grain];
+    init_tab_grain(&param, grains);
 
+    InitWindow(param.lenght, param.height, fenetre);
+    SetTargetFPS(60);
 
+    while (!WindowShouldClose()){
+        for(int i = 0; i < param.nombre_grain; i++)
+            calcul(&param, &constante, &grains[i]);
+        BeginDrawing();
+            ClearBackground(BLACK);
+            for(int i = 0; i < param.nombre_grain; i++){
+                Vector2 vect;
+                vect.x = grains[i].pos.x;
+                vect.y = grains[i].pos.y;
+                DrawPixelV(vect, WHITE);
+            }
+        EndDrawing();
+    }
+
+    CloseWindow();
     return 0;
 }
 
@@ -73,7 +90,7 @@ void argument_recuperation(int nb_args, char* tab_args[], Parametre* param){
     }
 }
 
-void calcul(Parametre* param,Const* constante ,Grain* grain){
+void calcul(Parametre* param,Const* constante ,Grain *grain){
     float amp_u = fabsf(amplitude(grain->pos.x, (grain->pos.y + constante->pas), constante->m, constante->n, param->lenght, param->height));
     float amp_d = fabsf(amplitude(grain->pos.x, (grain->pos.y - constante->pas), constante->m, constante->n, param->lenght, param->height));
     float amp_l = fabsf(amplitude((grain->pos.x + constante->pas), grain->pos.y, constante->m, constante->n, param->lenght, param->height));
@@ -84,15 +101,12 @@ void calcul(Parametre* param,Const* constante ,Grain* grain){
     maj_pos(grain, moy_amp, constante->delta_T);
 }
 
-Grain** init_tab_grain(Parametre* param){
-    Grain** grains = malloc(param->nombre_grain * sizeof(Grain*));
+void init_tab_grain(Parametre* param, Grain grains[]){
     for(int i = 0; i < param->nombre_grain; i++){
-        float random_x = ((float)rand() / RAND_MAX) * param->lenght;
-        float random_y = ((float)rand() / RAND_MAX) * param->height;
+        float random_x = ((float)rand() / (float)RAND_MAX) * param->lenght;
+        float random_y = ((float)rand() / (float)RAND_MAX) * param->height;
 
-        grains[i]->pos.x = random_x;
-        grains[i]->pos.y = random_y;
+        grains[i].pos.x = random_x;
+        grains[i].pos.y = random_y;
     }
-
-    return grains;
 }

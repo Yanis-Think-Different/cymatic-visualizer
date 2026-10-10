@@ -11,8 +11,11 @@ CFLAGS = -Wall -Wpointer-arith
 LPATH =
 LFLAGS = -lm -lraylib
 
-% : $(BIN)/%.o
-	$(CC) $(LPATH) $< -o $@ $(LFLAGS)
+EXEC = test
+OBJ = $(patsubst $(SRC)/%.c, $(BIN)/%.o, $(wildcard $(SRC)/*.c))
+
+$(EXEC) : $(OBJ)
+	$(CC) $(LPATH) $^ -o $@ $(LFLAGS)
 
 $(BIN)/%.o : $(SRC)/%.c
 	$(CC) -c $(STD) $(PFLAGS) $(CFLAGS) $< -o $@

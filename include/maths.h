@@ -23,4 +23,7 @@ Vector sub_vector(Vector un, Vector deux);
  */
 Vector mul_vect_val(Vector un, float val);
 
+
+Vector normalisation(Vector other);
+
 #endif

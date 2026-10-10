@@ -5,6 +5,7 @@
 #include <math.h>
 #include "outils.h"
 #include "maths.h"
+#include <raylib.h>
 
 typedef struct grain{
     Vector pos;

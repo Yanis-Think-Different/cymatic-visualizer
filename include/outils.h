@@ -1,8 +1,6 @@
 #ifndef OUTIL
 #define OUTIL
 
-#define PI 3.14
-
 typedef struct vector{
     float x;
     float y;
