@@ -6,6 +6,7 @@
 #include "../include/affichage.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define HEIGHT 720
 #define LENGHT 1280
@@ -13,21 +14,35 @@
 
 void argument_recuperation(int nb_args, char* tab_args[], Parametre* param);
 
+void calcul(Parametre* param,Const* constante ,Grain* grain);
+
+//////////////////////////////////////
+
 int main(int argc, char* argv[]){
+    srand(time(NULL));
+
     Parametre param;
+    Const constante;
+
     param.height = HEIGHT;
     param.lenght = LENGHT;
     param.nombre_grain = GRAIN_NB;
 
+    constante.delta_T = 1;
+    constante.pas = 1;
+    constante.m = 56;
+    constante.n = 165;
+
     if(argc > 1)
         argument_recuperation(argc, argv, &param);
 
-    printf("%d\n",param.height);
-    printf("%d\n",param.lenght);
-    printf("%d\n",param.nombre_grain);
+    Grain* grains = malloc(param.nombre_grain * sizeof(Grain));
+
 
     return 0;
 }
+
+//////////////////////////////////////
 
 void argument_recuperation(int nb_args, char* tab_args[], Parametre* param){
     for (int i = 1; i < nb_args; i++){
@@ -54,4 +69,15 @@ void argument_recuperation(int nb_args, char* tab_args[], Parametre* param){
             exit(EXIT_FAILURE);
         }
     }
+}
+
+void calcul(Parametre* param,Const* constante ,Grain* grain){
+    float amp_u = amplitude(grain->pos.x, (grain->pos.y + constante->pas), constante->m, constante->n, param->lenght, param->height);
+    float amp_d = amplitude(grain->pos.x, (grain->pos.y - constante->pas), constante->m, constante->n, param->lenght, param->height);
+    float amp_l = amplitude((grain->pos.x + constante->pas), grain->pos.y, constante->m, constante->n, param->lenght, param->height);
+    float amp_r = amplitude((grain->pos.x - constante->pas), grain->pos.y, constante->m, constante->n, param->lenght, param->height);
+    float moy_amp = (amp_d + amp_l + amp_r + amp_u) / 4;
+
+    new_direction(grain, amp_u, amp_d, amp_l, amp_r);
+    maj_pos(grain, moy_amp, constante->delta_T);
 }
