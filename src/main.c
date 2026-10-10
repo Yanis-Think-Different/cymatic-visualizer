@@ -16,10 +16,12 @@ void argument_recuperation(int nb_args, char* tab_args[], Parametre* param);
 
 void calcul(Parametre* param,Const* constante ,Grain* grain);
 
+Grain** init_tab_grain(Parametre* param);
+
 //////////////////////////////////////
 
 int main(int argc, char* argv[]){
-    srand(time(NULL));
+    srand(1234);
 
     Parametre param;
     Const constante;
@@ -36,7 +38,7 @@ int main(int argc, char* argv[]){
     if(argc > 1)
         argument_recuperation(argc, argv, &param);
 
-    Grain* grains = malloc(param.nombre_grain * sizeof(Grain));
+    Grain** grains;
 
 
     return 0;
@@ -80,4 +82,17 @@ void calcul(Parametre* param,Const* constante ,Grain* grain){
 
     new_direction(grain, amp_u, amp_d, amp_l, amp_r);
     maj_pos(grain, moy_amp, constante->delta_T);
+}
+
+Grain** init_tab_grain(Parametre* param){
+    Grain** grains = malloc(param->nombre_grain * sizeof(Grain*));
+    for(int i = 0; i < param->nombre_grain; i++){
+        float random_x = ((float)rand() / RAND_MAX) * param->lenght;
+        float random_y = ((float)rand() / RAND_MAX) * param->height;
+
+        grains[i]->pos.x = random_x;
+        grains[i]->pos.y = random_y;
+    }
+
+    return grains;
 }
