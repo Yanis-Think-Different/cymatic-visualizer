@@ -15,3 +15,12 @@ void new_direction(Grain* other, float ampli_u, float ampli_d, float ampli_l, fl
 
     other->pos = dir;
 }
+
+void maj_pos(Grain* other, float amp, float delta_T){
+    Vector anc_pos = other->pos;
+    if (amp < 0)
+        amp = amp * -1;
+    Vector dir_amelio = mul_vect_val(mul_vect_val(other->dir, amp), delta_T);
+    Vector new_pos = sub_vector(anc_pos, dir_amelio);
+    other->pos = new_pos;
+}
