@@ -2,7 +2,7 @@
 #define MATHS
 
 #include <stdlib.h>
-#include "outils.h"
+#include "../include/outils.h"
 
 /*
  * difference
