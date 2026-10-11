@@ -9,8 +9,6 @@ typedef struct vector{
 typedef struct Constante{
     float pas;
     float delta_T;
-    int n;
-    int m;
 }Const;
 
 typedef struct Param{
@@ -18,5 +16,11 @@ typedef struct Param{
     int lenght;
     int height;
 }Parametre;
+
+typedef struct Couple{
+    int m;
+    int n;
+    int key;
+}Couple;
 
 #endif

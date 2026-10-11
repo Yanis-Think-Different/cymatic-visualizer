@@ -14,7 +14,7 @@
 
 void argument_recuperation(int nb_args, char* tab_args[], Parametre* param, char* fichier);
 
-void calcul(Parametre* param,Const* constante ,Grain *grain);
+void calcul(Parametre* param,Const* constante ,Grain* grain, Couple* val);
 
 void init_tab_grain(Parametre* param, Grain grains[]);
 
@@ -26,6 +26,7 @@ int main(int argc, char* argv[]){
     //// INIT param generaux
     Parametre param;
     Const constante;
+    Couple valeur;
     char* fichier = "music/rubedo.mp3";
     char* fenetre = "cynamic-visualizer";
     param.height = HEIGHT;
@@ -33,8 +34,6 @@ int main(int argc, char* argv[]){
     param.nombre_grain = GRAIN_NB;
     constante.delta_T = 10;
     constante.pas = 1;
-    constante.m = 1;
-    constante.n = 6;
     bool pause = false;
 
     if(argc > 1)
@@ -88,7 +87,7 @@ int main(int argc, char* argv[]){
 
         ////// Calcul
         for(int i = 0; i < param.nombre_grain; i++)
-            calcul(&param, &constante, &grains[i]);
+            calcul(&param, &constante, &grains[i], &valeur);
 
         ////// Dessin
         BeginDrawing();
@@ -142,11 +141,11 @@ void argument_recuperation(int nb_args, char* tab_args[], Parametre* param, char
     }
 }
 
-void calcul(Parametre* param,Const* constante ,Grain *grain){
-    float amp_u = fabsf(amplitude(grain->pos.x, (grain->pos.y + constante->pas), constante->m, constante->n, param->lenght, param->height));
-    float amp_d = fabsf(amplitude(grain->pos.x, (grain->pos.y - constante->pas), constante->m, constante->n, param->lenght, param->height));
-    float amp_l = fabsf(amplitude((grain->pos.x + constante->pas), grain->pos.y, constante->m, constante->n, param->lenght, param->height));
-    float amp_r = fabsf(amplitude((grain->pos.x - constante->pas), grain->pos.y, constante->m, constante->n, param->lenght, param->height));
+void calcul(Parametre* param,Const* constante ,Grain* grain, Couple* val){
+    float amp_u = fabsf(amplitude(grain->pos.x, (grain->pos.y + constante->pas), val->m, val->n, param->lenght, param->height));
+    float amp_d = fabsf(amplitude(grain->pos.x, (grain->pos.y - constante->pas), val->m, val->n, param->lenght, param->height));
+    float amp_l = fabsf(amplitude((grain->pos.x + constante->pas), grain->pos.y, val->m, val->n, param->lenght, param->height));
+    float amp_r = fabsf(amplitude((grain->pos.x - constante->pas), grain->pos.y, val->m, val->n, param->lenght, param->height));
     float moy_amp = (amp_d + amp_l + amp_r + amp_u) / 4;
 
     new_direction(grain, amp_u, amp_d, amp_l, amp_r);
