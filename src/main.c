@@ -83,6 +83,9 @@ int main(int argc, char* argv[]){
                 buffer_entry[i] = tab[indice_begin+i];
             //le n correspond à la taille de mon buffer et on met s à 1 (on lit tout des le depart)
             fft(buffer_entry, TRAME, 1, buffer_exit);
+            int max = peak(buffer_exit, TRAME);
+            float frequence = conversion_hz(max, metadonne.sampleRate, TRAME);
+            harmonisation(&valeur, frequence);
         }
 
         ////// Calcul
