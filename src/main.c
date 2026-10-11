@@ -9,7 +9,7 @@
 
 #define HEIGHT 720
 #define LENGHT 1280
-#define GRAIN_NB 10000
+#define GRAIN_NB 100000
 #define TRAME 2048
 
 void argument_recuperation(int nb_args, char* tab_args[], Parametre* param, char* fichier);
@@ -27,12 +27,12 @@ int main(int argc, char* argv[]){
     Parametre param;
     Const constante;
     Couple valeur;
-    char* fichier = "music/rubedo.mp3";
+    char* fichier = "music/ncs1.mp3";
     char* fenetre = "cynamic-visualizer";
     param.height = HEIGHT;
     param.lenght = LENGHT;
     param.nombre_grain = GRAIN_NB;
-    constante.delta_T = 10;
+    constante.delta_T = 20;
     constante.pas = 1;
     bool pause = false;
 
@@ -51,10 +51,12 @@ int main(int argc, char* argv[]){
     InitAudioDevice();
     Music music = LoadMusicStream(fichier);
     PlayMusicStream(music);
+    SetMusicVolume(music, 0.02);
     Wave metadonne = LoadWave(fichier);
     WaveFormat(&metadonne, metadonne.sampleRate, 32, 1);
-    float _Complex* tab = (float _Complex*)LoadWaveSamples(metadonne);
+    float* tab = LoadWaveSamples(metadonne);
     int taille_tab = metadonne.frameCount;
+    float frequence;
 
     while (!WindowShouldClose()){
 
@@ -79,14 +81,17 @@ int main(int argc, char* argv[]){
             // On cree deux buffer pour stocke le son actuelle et appluie une tranformation pour obtenir un spectre
             float _Complex buffer_entry[TRAME];
             float _Complex buffer_exit[TRAME];
-            for(int i = 0; i < TRAME; i++)
-                buffer_entry[i] = tab[indice_begin+i];
+            for (int i = 0; i < TRAME; i++)
+                buffer_entry[i] = tab[indice_begin + i] + 0.0f * I;
             //le n correspond à la taille de mon buffer et on met s à 1 (on lit tout des le depart)
             fft(buffer_entry, TRAME, 1, buffer_exit);
             int max = peak(buffer_exit, TRAME);
-            float frequence = conversion_hz(max, metadonne.sampleRate, TRAME);
+            frequence = conversion_hz(max, metadonne.sampleRate, TRAME);
             harmonisation(&valeur, frequence);
         }
+
+
+        printf("%f, %d, %d\n", frequence, valeur.m, valeur.n);
 
         ////// Calcul
         for(int i = 0; i < param.nombre_grain; i++)

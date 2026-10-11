@@ -22,11 +22,14 @@ void fft(const float _Complex* x_entree, int n, int s, float _Complex* x_sortie)
 }
 
 int peak(float _Complex* tab, int taille){
-    float max = cabsf(tab[0]);
-    int indice = 0;
-    for(int i = 1; i < taille/2; i++){
+    float max = cabsf(tab[1]);
+    int indice = 1;
+    for(int i = 2; i < taille/2; i++){
         float valeur = cabsf(tab[i]);
-        indice = (valeur > max) ? i : indice;
+        if (valeur > max) {
+            max = valeur;
+            indice = i;
+        }
     }
     return indice;
 }
@@ -63,7 +66,7 @@ void harmonisation(Couple* val, float frequence){
     }
 
     float frequence_min = 50;
-    float frequence_max = 4000;
+    float frequence_max = 2000;
     if (frequence < frequence_min)
         frequence = frequence_min;
     else if (frequence > frequence_max)
