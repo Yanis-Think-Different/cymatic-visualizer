@@ -1,1 +1,0 @@
-# cymatic-visualizer
