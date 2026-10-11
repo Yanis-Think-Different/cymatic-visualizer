@@ -1,14 +1,16 @@
 #include "../include/physic.h"
 #include "../include/outils.h"
-//#include "../include/audio.h"
+#include "../include/audio.h"
 #include <raylib.h>
 #include <stdio.h>
 #include <stdlib.h>
 //#include <time.h>
+#include <complex.h>
 
 #define HEIGHT 720
 #define LENGHT 1280
 #define GRAIN_NB 10000
+#define TRAME 2048
 
 void argument_recuperation(int nb_args, char* tab_args[], Parametre* param, char* fichier);
 
@@ -51,13 +53,15 @@ int main(int argc, char* argv[]){
     Music music = LoadMusicStream(fichier);
     PlayMusicStream(music);
     Wave metadonne = LoadWave(fichier);
-    float* tab = LoadWaveSamples(metadonne);
-    int taille_tab = metadonne.frameCount * metadonne.channels;
+    WaveFormat(&metadonne, metadonne.sampleRate, 32, 1);
+    float _Complex* tab = (float _Complex*)LoadWaveSamples(metadonne);
+    int taille_tab = metadonne.frameCount;
 
     while (!WindowShouldClose()){
 
         ////// Music
         UpdateMusicStream(music);
+        // Commande de pause et de restart
         if (IsKeyPressed(KEY_SPACE)){
             StopMusicStream(music);
             PlayMusicStream(music);
@@ -67,6 +71,19 @@ int main(int argc, char* argv[]){
 
             if (pause) PauseMusicStream(music);
             else ResumeMusicStream(music);
+        }
+        //Operation d'Analyse de transo et d'harmonisation pour recup le n et le m
+        // on recup l'indice de depart au moment present de la music
+        int indice_begin = GetMusicTimePlayed(music) * metadonne.sampleRate;
+        //Tant qu'on est pas à la fin de la music on fait les transfo
+        if (indice_begin + TRAME < taille_tab){
+            // On cree deux buffer pour stocke le son actuelle et appluie une tranformation pour obtenir un spectre
+            float _Complex buffer_entry[TRAME];
+            float _Complex buffer_exit[TRAME];
+            for(int i = 0; i < TRAME; i++)
+                buffer_entry[i] = tab[indice_begin+i];
+            //le n correspond à la taille de mon buffer et on met s à 1 (on lit tout des le depart)
+            fft(buffer_entry, TRAME, 1, buffer_exit);
         }
 
         ////// Calcul
@@ -86,7 +103,7 @@ int main(int argc, char* argv[]){
     }
 
     UnloadMusicStream(music);
-    UnloadWaveSamples(tab);
+    UnloadWaveSamples((float*)tab);
     UnloadWave(metadonne);
     CloseAudioDevice();
     CloseWindow();

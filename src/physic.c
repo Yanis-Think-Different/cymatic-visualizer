@@ -1,7 +1,7 @@
 #include "../include/physic.h"
 
 float amplitude(float x, float y, int m, int n, int lenght, int height){
-    return cos((n*PI*x)/lenght) * cos((m*PI*y)/height) - cos((m*PI*x)/lenght) * cos((n*PI*y)/height);
+    return cosf((n*PI*x)/lenght) * cosf((m*PI*y)/height) - cosf((m*PI*x)/lenght) * cosf((n*PI*y)/height);
 }
 
 void new_direction(Grain* other, float ampli_u, float ampli_d, float ampli_l, float ampli_r){
