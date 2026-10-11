@@ -50,6 +50,9 @@ int main(int argc, char* argv[]){
     InitAudioDevice();
     Music music = LoadMusicStream(fichier);
     PlayMusicStream(music);
+    Wave metadonne = LoadWave(fichier);
+    float* tab = LoadWaveSamples(metadonne);
+    int taille_tab = metadonne.frameCount * metadonne.channels;
 
     while (!WindowShouldClose()){
 
@@ -83,6 +86,8 @@ int main(int argc, char* argv[]){
     }
 
     UnloadMusicStream(music);
+    UnloadWaveSamples(tab);
+    UnloadWave(metadonne);
     CloseAudioDevice();
     CloseWindow();
     return 0;
