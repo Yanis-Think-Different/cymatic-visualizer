@@ -4,7 +4,7 @@
 #include <raylib.h>
 
 #define NB_COUPLES (N_MAX * (N_MAX - 1) / 2)
-#define N_MAX 10
+#define N_MAX 12
 
 void fft(const float _Complex* x_entree, int n, int s, float _Complex* x_sortie){
     if(n == 1)
@@ -65,8 +65,8 @@ void harmonisation(Couple* val, float frequence){
         initialise = 1;
     }
 
-    float frequence_min = 50;
-    float frequence_max = 2000;
+    float frequence_min = 10;
+    float frequence_max = 5000;
     if (frequence < frequence_min)
         frequence = frequence_min;
     else if (frequence > frequence_max)

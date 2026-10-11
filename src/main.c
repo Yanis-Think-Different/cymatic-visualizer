@@ -4,37 +4,38 @@
 #include <raylib.h>
 #include <stdio.h>
 #include <stdlib.h>
-//#include <time.h>
+#include <time.h>
 #include <complex.h>
 
-#define HEIGHT 720
-#define LENGHT 1280
-#define GRAIN_NB 100000
+#define HEIGHT 1000
+#define LENGHT 1000
+#define GRAIN_NB 25000
 #define TRAME 2048
 
 void argument_recuperation(int nb_args, char* tab_args[], Parametre* param, char* fichier);
 
-void calcul(Parametre* param,Const* constante ,Grain* grain, Couple* val);
+void calcul(Parametre* param, Const* constante, Grain* grain, ModeActif modes[4]);
 
 void init_tab_grain(Parametre* param, Grain grains[]);
 
 //////////////////////////////////////
 
 int main(int argc, char* argv[]){
-    srand(1234);
+    srand(time(NULL));
 
     //// INIT param generaux
     Parametre param;
     Const constante;
-    Couple valeur;
-    char* fichier = "music/ncs1.mp3";
+    ModeActif modes[4] = { 0 };
+    char* fichier = "music/flat.mp3";
     char* fenetre = "cynamic-visualizer";
     param.height = HEIGHT;
     param.lenght = LENGHT;
     param.nombre_grain = GRAIN_NB;
-    constante.delta_T = 20;
+    constante.delta_T = 0.1;
     constante.pas = 1;
     bool pause = false;
+    float volume = 0.8f;
 
     if(argc > 1)
         argument_recuperation(argc, argv, &param, fichier);
@@ -51,7 +52,7 @@ int main(int argc, char* argv[]){
     InitAudioDevice();
     Music music = LoadMusicStream(fichier);
     PlayMusicStream(music);
-    SetMusicVolume(music, 0.02);
+    SetMusicVolume(music, volume);
     Wave metadonne = LoadWave(fichier);
     WaveFormat(&metadonne, metadonne.sampleRate, 32, 1);
     float* tab = LoadWaveSamples(metadonne);
@@ -73,29 +74,56 @@ int main(int argc, char* argv[]){
             if (pause) PauseMusicStream(music);
             else ResumeMusicStream(music);
         }
+        if (IsKeyDown(KEY_DOWN)){
+            volume -= 0.05f;
+            if (volume < 0.0f) volume = 0.0f;
+            SetMusicVolume(music, volume);
+        }
+        else if (IsKeyDown(KEY_UP)){
+            volume += 0.05f;
+            if (volume > 1.0f) volume = 1.0f;
+            SetMusicVolume(music, volume);
+        }
+
         //Operation d'Analyse de transo et d'harmonisation pour recup le n et le m
         // on recup l'indice de depart au moment present de la music
         int indice_begin = GetMusicTimePlayed(music) * metadonne.sampleRate;
         //Tant qu'on est pas à la fin de la music on fait les transfo
         if (indice_begin + TRAME < taille_tab){
-            // On cree deux buffer pour stocke le son actuelle et appluie une tranformation pour obtenir un spectre
             float _Complex buffer_entry[TRAME];
             float _Complex buffer_exit[TRAME];
             for (int i = 0; i < TRAME; i++)
                 buffer_entry[i] = tab[indice_begin + i] + 0.0f * I;
-            //le n correspond à la taille de mon buffer et on met s à 1 (on lit tout des le depart)
+
             fft(buffer_entry, TRAME, 1, buffer_exit);
-            int max = peak(buffer_exit, TRAME);
-            frequence = conversion_hz(max, metadonne.sampleRate, TRAME);
-            harmonisation(&valeur, frequence);
+
+            // Découpage en 4 bandes : sub/basse [1..8], bas-médium [9..45], médium [46..180], aigu [181..500]
+            int bornes[5] = { 1, 9, 46, 181, 501 };
+
+            for(int b = 0; b < 4; b++){
+                float max_mag = 0.0f;
+                int idx_max = bornes[b];
+
+                for(int i = bornes[b]; i < bornes[b+1]; i++){
+                    float mag = cabsf(buffer_exit[i]);
+                    if (mag > max_mag){
+                        max_mag = mag;
+                        idx_max = i;
+                    }
+                }
+
+                frequence = conversion_hz(idx_max, metadonne.sampleRate, TRAME);
+                harmonisation(&modes[b].val, frequence);
+                modes[b].poids = max_mag;
+            }
         }
 
 
-        printf("%f, %d, %d\n", frequence, valeur.m, valeur.n);
+        printf("%f, %d, %d\n", frequence, modes->val.m, modes->val.n);
 
         ////// Calcul
         for(int i = 0; i < param.nombre_grain; i++)
-            calcul(&param, &constante, &grains[i], &valeur);
+            calcul(&param, &constante, &grains[i], modes);
 
         ////// Dessin
         BeginDrawing();
@@ -106,6 +134,7 @@ int main(int argc, char* argv[]){
                 vect.y = grains[i].pos.y;
                 DrawPixelV(vect, WHITE);
             }
+            DrawFPS(10,10);
         EndDrawing();
     }
 
@@ -149,11 +178,11 @@ void argument_recuperation(int nb_args, char* tab_args[], Parametre* param, char
     }
 }
 
-void calcul(Parametre* param,Const* constante ,Grain* grain, Couple* val){
-    float amp_u = fabsf(amplitude(grain->pos.x, (grain->pos.y + constante->pas), val->m, val->n, param->lenght, param->height));
-    float amp_d = fabsf(amplitude(grain->pos.x, (grain->pos.y - constante->pas), val->m, val->n, param->lenght, param->height));
-    float amp_l = fabsf(amplitude((grain->pos.x + constante->pas), grain->pos.y, val->m, val->n, param->lenght, param->height));
-    float amp_r = fabsf(amplitude((grain->pos.x - constante->pas), grain->pos.y, val->m, val->n, param->lenght, param->height));
+void calcul(Parametre* param, Const* constante, Grain* grain, ModeActif modes[4]){
+    float amp_u = fabsf(amplitude(grain->pos.x, (grain->pos.y + constante->pas), modes, param->lenght, param->height));
+    float amp_d = fabsf(amplitude(grain->pos.x, (grain->pos.y - constante->pas), modes, param->lenght, param->height));
+    float amp_l = fabsf(amplitude((grain->pos.x + constante->pas), grain->pos.y, modes, param->lenght, param->height));
+    float amp_r = fabsf(amplitude((grain->pos.x - constante->pas), grain->pos.y, modes, param->lenght, param->height));
     float moy_amp = (amp_d + amp_l + amp_r + amp_u) / 4;
 
     new_direction(grain, amp_u, amp_d, amp_l, amp_r);

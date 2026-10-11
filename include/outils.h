@@ -23,4 +23,9 @@ typedef struct Couple{
     int key;
 }Couple;
 
+typedef struct {
+    Couple val;
+    float poids;
+} ModeActif;
+
 #endif

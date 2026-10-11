@@ -22,7 +22,7 @@ typedef struct grain{
  * height      : hauteur de la plaque
  * Retour      : amplitude signée (peut être négative). 0 = ligne nodale.
  */
-float amplitude(float x, float y, int m, int n, int lenght, int height);
+float amplitude(float x, float y, ModeActif modes[4], int lenght, int height);
 
 /*
  * new_direction
