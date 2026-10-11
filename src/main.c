@@ -10,7 +10,7 @@
 #define LENGHT 1280
 #define GRAIN_NB 10000
 
-void argument_recuperation(int nb_args, char* tab_args[], Parametre* param);
+void argument_recuperation(int nb_args, char* tab_args[], Parametre* param, char* fichier);
 
 void calcul(Parametre* param,Const* constante ,Grain *grain);
 
@@ -21,31 +21,56 @@ void init_tab_grain(Parametre* param, Grain grains[]);
 int main(int argc, char* argv[]){
     srand(1234);
 
+    //// INIT param generaux
     Parametre param;
     Const constante;
+    char* fichier = "music/rubedo.mp3";
     char* fenetre = "cynamic-visualizer";
-
     param.height = HEIGHT;
     param.lenght = LENGHT;
     param.nombre_grain = GRAIN_NB;
-
-    constante.delta_T = 1;
+    constante.delta_T = 10;
     constante.pas = 1;
-    constante.m = 40;
-    constante.n = 30;
+    constante.m = 1;
+    constante.n = 6;
+    bool pause = false;
 
     if(argc > 1)
-        argument_recuperation(argc, argv, &param);
+        argument_recuperation(argc, argv, &param, fichier);
 
+    //// INIT param variable
     Grain grains[param.nombre_grain];
     init_tab_grain(&param, grains);
 
+    ////// INIT screen
     InitWindow(param.lenght, param.height, fenetre);
     SetTargetFPS(60);
 
+    ////// INIT music
+    InitAudioDevice();
+    Music music = LoadMusicStream(fichier);
+    PlayMusicStream(music);
+
     while (!WindowShouldClose()){
+
+        ////// Music
+        UpdateMusicStream(music);
+        if (IsKeyPressed(KEY_SPACE)){
+            StopMusicStream(music);
+            PlayMusicStream(music);
+        }
+        if (IsKeyPressed(KEY_P)){
+            pause = !pause;
+
+            if (pause) PauseMusicStream(music);
+            else ResumeMusicStream(music);
+        }
+
+        ////// Calcul
         for(int i = 0; i < param.nombre_grain; i++)
             calcul(&param, &constante, &grains[i]);
+
+        ////// Dessin
         BeginDrawing();
             ClearBackground(BLACK);
             for(int i = 0; i < param.nombre_grain; i++){
@@ -57,13 +82,15 @@ int main(int argc, char* argv[]){
         EndDrawing();
     }
 
+    UnloadMusicStream(music);
+    CloseAudioDevice();
     CloseWindow();
     return 0;
 }
 
 //////////////////////////////////////
 
-void argument_recuperation(int nb_args, char* tab_args[], Parametre* param){
+void argument_recuperation(int nb_args, char* tab_args[], Parametre* param, char* fichier){
     for (int i = 1; i < nb_args; i++){
         if(tab_args[i][0] == '-'){
             switch(tab_args[i][1]) {
@@ -79,6 +106,9 @@ void argument_recuperation(int nb_args, char* tab_args[], Parametre* param){
                     i++;
                     param->nombre_grain = atoi(tab_args[i]);
                     break;
+                case 'M':
+                    i++;
+                    fichier = tab_args[i];
                 default:
                     break;
             }
